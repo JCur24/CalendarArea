@@ -4,7 +4,7 @@ import { BroadcastOperator } from 'socket.io';
 import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
-import { isViewingArea } from '../TestUtils';
+import { isCalendarArea, isViewingArea } from '../TestUtils';
 import {
   ChatMessage,
   ConversationArea as ConversationAreaModel,
@@ -14,7 +14,9 @@ import {
   ServerToClientEvents,
   SocketData,
   ViewingArea as ViewingAreaModel,
+  CalendarArea as CalendarAreaModel,
 } from '../types/CoveyTownSocket';
+import CalendarArea from './CalendarArea';
 import ConversationArea from './ConversationArea';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
@@ -154,6 +156,14 @@ export default class Town {
         if (viewingArea) {
           (viewingArea as ViewingArea).updateModel(update);
         }
+      } else if (isCalendarArea(update)) {
+        newPlayer.townEmitter.emit('interactableUpdate', update);
+        const calendarArea = this._interactables.find(
+          eachInteractable => eachInteractable.id === update.id,
+        );
+        if (calendarArea) {
+          (calendarArea as CalendarArea).updateModel(update);
+        }
       }
     });
     return newPlayer;
@@ -284,6 +294,36 @@ export default class Town {
   }
 
   /**
+   * Creates a new calendar area in this town if there is not currently an active
+   * calendar area with the same ID. The calendar area ID must match the name of a
+   * calendar area that exists in this town's map, and the calendar area must not
+   * have any events.
+   *
+   * If successful creating the calendar area, this method:
+   *    Adds any players who are in the region defined by the calendar area to it
+   *    Notifies all players in the town that the calendar area has been updated by
+   *      emitting an interactableUpdate event
+   *
+   * @param calendarArea Information describing the calendar area to create.
+   *
+   * @returns True if the calendar area was created or false if there is no known
+   * calendar area with the specified ID or if there is already an active calendar area
+   * with the specified ID or if the calendarArea parameter does not have an event
+   */
+  public addCalendarArea(calendarArea: CalendarAreaModel): boolean {
+    const area = this._interactables.find(
+      eachArea => eachArea.id === calendarArea.id,
+    ) as CalendarArea;
+    if (!area || calendarArea.events.length === 0 || area.events.length > 0) {
+      return false;
+    }
+    area.updateModel(calendarArea);
+    area.addPlayersWithinBounds(this._players);
+    this._broadcastEmitter.emit('interactableUpdate', area.toModel());
+    return true;
+  }
+
+  /**
    * Fetch a player's session based on the provided session token. Returns undefined if the
    * session token is not valid.
    *
@@ -340,6 +380,12 @@ export default class Town {
     if (!objectLayer) {
       throw new Error(`Unable to find objects layer in map`);
     }
+    const calendarAreas = objectLayer.objects
+      .filter(eachObject => eachObject.type === 'CalendarArea')
+      .map(eachCalendarAreaObject =>
+        CalendarArea.fromMapObject(eachCalendarAreaObject, this._broadcastEmitter),
+      );
+
     const viewingAreas = objectLayer.objects
       .filter(eachObject => eachObject.type === 'ViewingArea')
       .map(eachViewingAreaObject =>
@@ -352,7 +398,10 @@ export default class Town {
         ConversationArea.fromMapObject(eachConvAreaObj, this._broadcastEmitter),
       );
 
-    this._interactables = this._interactables.concat(viewingAreas).concat(conversationAreas);
+    this._interactables = this._interactables
+      .concat(viewingAreas)
+      .concat(conversationAreas)
+      .concat(calendarAreas);
     this._validateInteractables();
   }
 
