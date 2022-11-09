@@ -108,19 +108,19 @@ describe('TownsController integration tests', () => {
       expectTownListMatches(towns, privTown1);
       expectTownListMatches(towns, privTown2);
     });
-  //   it('Allows for multiple towns with the same friendlyName', async () => {
-  //     const pubTown1 = await createTownForTesting(undefined, true);
-  //     const privTown1 = await createTownForTesting(pubTown1.friendlyName, false);
-  //     const pubTown2 = await createTownForTesting(pubTown1.friendlyName, true);
-  //     const privTown2 = await createTownForTesting(pubTown1.friendlyName, false);
+    it('Allows for multiple towns with the same friendlyName', async () => {
+      const pubTown1 = await createTownForTesting(undefined, true);
+      const privTown1 = await createTownForTesting(pubTown1.friendlyName, false);
+      const pubTown2 = await createTownForTesting(pubTown1.friendlyName, true);
+      const privTown2 = await createTownForTesting(pubTown1.friendlyName, false);
 
-  //     const towns = await controller.listTowns();
-  //     expectTownListMatches(towns, pubTown1);
-  //     expectTownListMatches(towns, pubTown2);
-  //     expectTownListMatches(towns, privTown1);
-  //     expectTownListMatches(towns, privTown2);
-  //   });
-  // });
+      const towns = await controller.listTowns();
+      expectTownListMatches(towns, pubTown1);
+      expectTownListMatches(towns, pubTown2);
+      expectTownListMatches(towns, privTown1);
+      expectTownListMatches(towns, privTown2);
+    });
+  });
 
   describe('deleteTown', () => {
     it('Throws an error if the password is invalid', async () => {
