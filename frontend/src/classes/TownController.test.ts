@@ -459,4 +459,5 @@ describe('TownController', () => {
     emitEventAndExpectListenerFiring('townClosing', undefined, 'disconnect');
     expect(mockLoginController.setTownController).toBeCalledWith(null);
   });
+  // comment
 });
