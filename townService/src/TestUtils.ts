@@ -23,6 +23,7 @@ import {
   SocketData,
   ViewingArea,
 } from './types/CoveyTownSocket';
+import CalendarArea from './town/CalendarArea';
 
 /**
  * Create a new conversation area using some random defaults
@@ -193,6 +194,10 @@ export function expectArraysToContainSameMembers<T>(actual: T[], expected: T[]):
   expected.forEach(expectedVal =>
     expect(actual.find(actualVal => actualVal === expectedVal)).toBeDefined(),
   );
+}
+
+export function isCalendarArea(interactable: Interactable): interactable is CalendarArea {
+  return 'events' in interactable;
 }
 
 export function isViewingArea(interactable: Interactable): interactable is ViewingArea {
