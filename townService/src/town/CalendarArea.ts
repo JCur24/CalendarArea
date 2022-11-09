@@ -4,14 +4,17 @@ import {
   BoundingBox,
   TownEmitter,
   CalendarArea as CalendarAreaModel,
-  CalendarEvent as CalendarEventModel,
 } from '../types/CoveyTownSocket';
 import CalendarEvent from '../lib/CalendarEvent';
 import Player from '../lib/Player';
 
 export default class CalendarArea extends InteractableArea {
   /* The events in this CalendarArea */
-  public events: CalendarEvent[];
+  private _events: CalendarEvent[];
+
+  public get events() {
+    return this._events;
+  }
 
   /**
    * Creates a new ConversationArea
@@ -26,7 +29,7 @@ export default class CalendarArea extends InteractableArea {
     townEmitter: TownEmitter,
   ) {
     super(calendarAreaModel.id, coordinates, townEmitter);
-    this.events = calendarAreaModel.events.map(model => CalendarEvent.fromModel(model));
+    this._events = calendarAreaModel.events.map(model => CalendarEvent.fromModel(model));
   }
 
   /**
@@ -48,7 +51,7 @@ export default class CalendarArea extends InteractableArea {
   public toModel(): CalendarAreaModel {
     return {
       id: this.id,
-      events: this.events,
+      events: this._events,
     };
   }
 
@@ -68,5 +71,9 @@ export default class CalendarArea extends InteractableArea {
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
     return new CalendarArea({ id: name, events: [] }, rect, broadcastEmitter);
+  }
+
+  public updateModel({ events }: CalendarAreaModel) {
+    this._events = events.map(event => CalendarEvent.fromModel(event));
   }
 }
