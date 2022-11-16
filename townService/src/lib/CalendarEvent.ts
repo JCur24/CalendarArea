@@ -52,7 +52,7 @@ export default class CalendarEvent {
     this._end = value;
   }
 
-  toCalenderEventModel(): CalendarEventModel {
+  toCalendarEventModel(): CalendarEventModel {
     return {
       id: this._id,
       title: this._title,
