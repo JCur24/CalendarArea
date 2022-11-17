@@ -17,7 +17,7 @@ export default class CalendarArea extends InteractableArea {
   }
 
   /**
-   * Creates a new ConversationArea
+   * Creates a new CalendarArea
    *
    * @param events model containing this area's current topic and its ID
    * @param coordinates  the bounding box that defines this conversation area
@@ -33,7 +33,7 @@ export default class CalendarArea extends InteractableArea {
   }
 
   /**
-   * Removes a player from this conversation area.
+   * Removes a player from this calendar area.
    *
    * Extends the base behavior of InteractableArea.
    *
@@ -41,6 +41,9 @@ export default class CalendarArea extends InteractableArea {
    */
   public remove(player: Player) {
     super.remove(player);
+    if (this._occupants.length === 0) {
+      this._emitAreaChanged();
+    }
     // TODO: Possibly add more functionality to remove
   }
 
@@ -56,9 +59,9 @@ export default class CalendarArea extends InteractableArea {
   }
 
   /**
-   * Creates a new ConversationArea object that will represent a Conversation Area object in the town map.
-   * @param mapObject An ITiledMapObject that represents a rectangle in which this conversation area exists
-   * @param broadcastEmitter An emitter that can be used by this conversation area to broadcast updates
+   * Creates a new calendarArea object that will represent a calendar Area object in the town map.
+   * @param mapObject An ITiledMapObject that represents a rectangle in which this calendar area exists
+   * @param broadcastEmitter An emitter that can be used by this calendar area to broadcast updates
    * @returns
    */
   public static fromMapObject(
