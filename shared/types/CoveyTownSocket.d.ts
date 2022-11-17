@@ -71,6 +71,7 @@ export interface ViewingArea {
 
 export interface CalendarArea {
   id: string;
+  calendarName?: string;
   events: CalendarEvent[];
 }
 

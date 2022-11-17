@@ -16,7 +16,7 @@ describe('CalendarArea', () => {
 
   beforeEach(() => {
     mockClear(townEmitter);
-    // `events = 
+    // `events =
     testArea = new CalendarArea({ id, events }, testAreaBox, townEmitter);
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);

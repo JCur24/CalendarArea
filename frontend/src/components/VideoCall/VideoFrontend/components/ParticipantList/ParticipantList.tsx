@@ -142,8 +142,8 @@ export default function ParticipantList() {
                         // highlight={highlightedProfiles?.includes(participant.identity) ?? false}
               participant={participant}
               profile={remoteProfile}
-              isSelected={participant === selectedParticipant}
-              onClick={() => setSelectedParticipant(participant)}
+              isSelected={partic
+                SelectedParticipant(participant)}
               hideParticipant={hideParticipant}
               slot={participantWithSlot.slot}
               insideGrid={false}

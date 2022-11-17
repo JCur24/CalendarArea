@@ -9,6 +9,9 @@ import CalendarEvent from '../lib/CalendarEvent';
 import Player from '../lib/Player';
 
 export default class CalendarArea extends InteractableArea {
+  /* The Calendar name in this CalendarAea */
+  private _calendarName?: string;
+
   /* The events in this CalendarArea */
   private _events: CalendarEvent[];
 
@@ -55,6 +58,7 @@ export default class CalendarArea extends InteractableArea {
     return {
       id: this.id,
       events: this._events,
+      calendarName: this._calendarName,
     };
   }
 

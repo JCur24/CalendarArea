@@ -8,9 +8,21 @@ import { CalendarEvent } from '../types/CoveyTownSocket';
  * are only ever emitted to local components (not to the townService).
  */
 export type CalendarAreaEvents = {
+  /**
+   * A playbackChange event indicates that the playing/paused state has changed.
+   * Listeners are passed the new state in the parameter `isPlaying`
+   */
   eventsChange: (events: CalendarEvent[]) => void;
 };
 
+/**
+ * A CalendarAreaController manages the state for a CalendarArea in the frontend app, serving as a bridge between the calendar
+ * that is in the browser and the backend TownService, ensuring that all players viewing the same calendar
+ * are have the same events.
+ *
+ * The CalendarAreaController implements callbacks that handle events from the video player in this browser window, and
+ * emits updates when the state is updated, @see ViewingAreaEvents
+ */
 export default class ConversationAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
   private _id: string;
 
