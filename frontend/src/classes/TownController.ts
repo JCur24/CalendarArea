@@ -100,12 +100,12 @@ export type TownEvents = {
 /**
  * The (frontend) TownController manages the communication between the frontend
  * and the backend. When a player join a town, a new TownController is created,
- * and frontend components can register to receive events (@see CoveyTownEvents).
+ * and frontend components can register to receive events (@see CoveyTownEvents ).
  *
  * To access the TownController from a React component, use the
- * useTownController hook (@see useTownController). While the town controller
+ * useTownController hook (@see useTownController ). While the town controller
  * can be directly used by React components, it is generally preferable to use the various hooks
- * defined in this file (e.g. @see usePlayers, @see useConversationAreas), which will automatically
+ * defined in this file (e.g. @see usePlayers, @see useConversationAreas ), which will automatically
  * subscribe to updates to their respective data, triggering the React component that consumes them
  * to re-render when the underlying data changes.
  *
@@ -422,14 +422,14 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
     /**
      * When an interactable's state changes, push that update into the relevant controller, which is assumed
-     * to be either a Viewing Area or a Conversation Area, and which is assumed to already be represented by a
+     * to be either a Viewing Area, Conversation Area, or CalendarArea, and which is assumed to already be represented by a
      * ViewingAreaController or ConversationAreaController that this TownController has.
      *
      * If a conversation area transitions from empty to occupied (or occupied to empty), this handler will emit
      * a conversationAreasChagned event to listeners of this TownController.
      *
      * If the update changes properties of the interactable, the interactable is also expected to emit its own
-     * events (@see ViewingAreaController and @see ConversationAreaController)
+     * events (@see ViewingAreaController and @see ConversationAreaController and @see CalendarAreaController )
      */
     this._socket.on('interactableUpdate', interactable => {
       if (isConversationArea(interactable)) {
