@@ -71,8 +71,12 @@ export interface ViewingArea {
 
 export interface CalendarArea {
   id: string;
+<<<<<<< HEAD
   calendarName?: string;
   events: CalendarEvent[];
+=======
+  events: Event[];
+>>>>>>> main
 }
 
 export interface CalendarEvent {
@@ -81,6 +85,13 @@ export interface CalendarEvent {
   start: Date;
   end: Date;
 }
+
+export type Event = {
+  id: number;
+  title: string;
+  start: Date;
+  end: Date;
+};
 
 export interface ServerToClientEvents {
   playerMoved: (movedPlayer: Player) => void;
