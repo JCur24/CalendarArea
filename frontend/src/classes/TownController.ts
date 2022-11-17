@@ -453,7 +453,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           eachArea => eachArea.id === interactable.id,
         );
         if (updatedCalendarArea) {
-          updatedCalendarArea.events = interactable.events;
+          updatedCalendarArea?.updateFrom(interactable);
         }
       }
     });
@@ -591,9 +591,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           } else if (isViewingArea(eachInteractable)) {
             this._viewingAreas.push(new ViewingAreaController(eachInteractable));
           } else if (isCalendarArea(eachInteractable)) {
-            this._calendarAreas.push(
-              new CalendarAreaController(eachInteractable.id, eachInteractable.events),
-            );
+            this._calendarAreas.push(new CalendarAreaController(eachInteractable));
           }
         });
         this._userID = initialData.userID;

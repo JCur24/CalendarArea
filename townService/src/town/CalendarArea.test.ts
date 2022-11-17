@@ -1,9 +1,7 @@
 import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
-import CalendarEvent from '../lib/CalendarEvent';
 import Player from '../lib/Player';
-import { getLastEmittedEvent } from '../TestUtils';
-import { TownEmitter } from '../types/CoveyTownSocket';
+import { TownEmitter, CalendarEvent } from '../types/CoveyTownSocket';
 import CalendarArea from './CalendarArea';
 
 describe('CalendarArea', () => {
