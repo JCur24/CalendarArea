@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import _ from 'lodash';
 import TypedEmitter from 'typed-emitter';
 import { CalendarEvent } from '../types/CoveyTownSocket';
+import { CalendarArea as CalendarAreaModel } from '../types/CoveyTownSocket';
 
 /**
  * The events that the CalendarAreaController emits to subscribers. These events
@@ -9,8 +10,13 @@ import { CalendarEvent } from '../types/CoveyTownSocket';
  */
 export type CalendarAreaEvents = {
   /**
-   * A playbackChange event indicates that the playing/paused state has changed.
-   * Listeners are passed the new state in the parameter `isPlaying`
+   * A calendarNameChange event indicates that the calendarName state has changed.
+   * Listeners are passed the new state in the parameter `calendarName`
+   */
+  calendarNameChange: (calendarName: string) => void;
+  /**
+   * An events event indicates that the events on the calendar state has changed.
+   * Listeners are passed the new state in the parameter `events`
    */
   eventsChange: (events: CalendarEvent[]) => void;
 };
@@ -26,6 +32,8 @@ export type CalendarAreaEvents = {
 export default class ConversationAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
   private _id: string;
 
+  private _calendarAreaName?: string;
+
   private _events: CalendarEvent[];
 
   /**
@@ -33,10 +41,11 @@ export default class ConversationAreaController extends (EventEmitter as new () 
    * @param id
    * @param events
    */
-  constructor(id: string, events: CalendarEvent[]) {
+  constructor(calendarAreaModel: CalendarAreaModel) {
     super();
-    this._id = id;
-    this._events = events;
+    this._id = calendarAreaModel.id;
+    this._calendarAreaName = calendarAreaModel.calendarName;
+    this._events = calendarAreaModel.events;
   }
 
   /**
@@ -44,6 +53,14 @@ export default class ConversationAreaController extends (EventEmitter as new () 
    */
   get id() {
     return this._id;
+  }
+
+  get calendarName(): string | undefined {
+    return this._calendarAreaName;
+  }
+
+  set calendarName(calendarName: string | undefined) {
+    this._calendarAreaName = calendarName;
   }
 
   get events() {
@@ -55,5 +72,16 @@ export default class ConversationAreaController extends (EventEmitter as new () 
       this.emit('eventsChange', events);
       this._events = events;
     }
+  }
+
+  /**
+   * Applies updates to this calendar area controller's model, setting the fields
+   * calendarName and events from the updatedModel
+   *
+   * @param updatedModel
+   */
+  public updateFrom(updatedModel: CalendarAreaModel): void {
+    this.calendarName = updatedModel.calendarName;
+    this.events = updatedModel.events;
   }
 }

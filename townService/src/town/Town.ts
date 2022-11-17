@@ -314,7 +314,7 @@ export default class Town {
     const area = this._interactables.find(
       eachArea => eachArea.id === calendarArea.id,
     ) as CalendarArea;
-    if (!area || calendarArea.events.length === 0 || area.events.length > 0) {
+    if (!area || !calendarArea.calendarName || area.calendarName) {
       return false;
     }
     area.updateModel(calendarArea);
