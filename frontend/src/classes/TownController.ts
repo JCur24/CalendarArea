@@ -15,8 +15,10 @@ import {
   PlayerLocation,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
+  CalendarArea as CalendarAreaModel,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isViewingArea } from '../types/TypeUtils';
+import { isCalendarArea, isConversationArea, isViewingArea } from '../types/TypeUtils';
+import CalendarAreaController from './CalendarAreaController';
 import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
@@ -69,6 +71,11 @@ export type TownEvents = {
    * the town controller's record of viewing areas.
    */
   viewingAreasChanged: (newViewingAreas: ViewingAreaController[]) => void;
+  /**
+   * An event that indicates that the set of calendar areas has changed. This event is emitted after updating
+   * the town controller's record of calendar areas.
+   */
+  calendarAreasChanged: (newCalendarAreas: CalendarAreaController[]) => void;
   /**
    * An event that indicates that a new chat message has been received, which is the parameter passed to the listener
    */
@@ -190,6 +197,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
   private _viewingAreas: ViewingAreaController[] = [];
 
+  /**
+   * The current list of calendar areas in the town.
+   */
+  private _calendarAreasInternal: CalendarAreaController[] = [];
+
   public constructor({ userName, townID, loginController }: ConnectionProperties) {
     super();
     this._townID = townID;
@@ -285,6 +297,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   private set _players(newPlayers: PlayerController[]) {
     this.emit('playersChanged', newPlayers);
     this._playersInternal = newPlayers;
+  }
+
+  public get calendarAreas() {
+    return this._calendarAreasInternal;
+  }
+
+  private set _calendarAreas(newCalendarAreas: CalendarAreaController[]) {
+    this._calendarAreasInternal = newCalendarAreas;
+    this.emit('calendarAreasChanged', newCalendarAreas);
   }
 
   public get conversationAreas() {
@@ -427,6 +448,13 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           eachArea => eachArea.id === interactable.id,
         );
         updatedViewingArea?.updateFrom(interactable);
+      } else if (isCalendarArea(interactable)) {
+        const updatedCalendarArea = this._calendarAreas.find(
+          eachArea => eachArea.id === interactable.id,
+        );
+        if (updatedCalendarArea) {
+          updatedCalendarArea.events = interactable.events;
+        }
       }
     });
   }
@@ -509,6 +537,17 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
+   * Create a new calendar area, sending the request to the townService. Throws an error if the request
+   * is not successful. Does not immediately update local state about the new viewing area - it will be
+   * updated once the townService creates the area and emits an interactableUpdate
+   *
+   * @param newArea
+   */
+  async createCalendarArea(newArea: CalendarAreaModel) {
+    await this._townsService.createCalendarArea(this.townID, this.sessionToken, newArea);
+  }
+
+  /**
    * Disconnect from the town, notifying the townService that we are leaving and returning
    * to the login page
    */
@@ -540,6 +579,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
         this._conversationAreas = [];
         this._viewingAreas = [];
+        this._calendarAreas = [];
         initialData.interactables.forEach(eachInteractable => {
           if (isConversationArea(eachInteractable)) {
             this._conversationAreasInternal.push(
@@ -550,6 +590,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             );
           } else if (isViewingArea(eachInteractable)) {
             this._viewingAreas.push(new ViewingAreaController(eachInteractable));
+          } else if (isCalendarArea(eachInteractable)) {
+            this._calendarAreas.push(
+              new CalendarAreaController(eachInteractable.id, eachInteractable.events),
+            );
           }
         });
         this._userID = initialData.userID;
