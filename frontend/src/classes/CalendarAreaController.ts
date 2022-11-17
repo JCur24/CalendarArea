@@ -1,8 +1,7 @@
 import EventEmitter from 'events';
 import _ from 'lodash';
 import TypedEmitter from 'typed-emitter';
-import { CalendarEvent } from '../types/CoveyTownSocket';
-import { CalendarArea as CalendarAreaModel } from '../types/CoveyTownSocket';
+import { CalendarArea as CalendarAreaModel, CalendarEvent } from '../types/CoveyTownSocket';
 
 /**
  * The events that the CalendarAreaController emits to subscribers. These events

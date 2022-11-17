@@ -78,8 +78,8 @@ export interface CalendarArea {
 export interface CalendarEvent {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: string;
+  end: string;
 }
 
 export interface ServerToClientEvents {
