@@ -9,7 +9,7 @@ import {
 import Player from '../lib/Player';
 
 export default class CalendarArea extends InteractableArea {
-  /* The Calendar name in this CalendarAea */
+  /* The Calendar name in this CalendarArea */
   private _calendarName?: string;
 
   /* The events in this CalendarArea */
