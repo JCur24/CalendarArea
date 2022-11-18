@@ -1,65 +1,86 @@
-import EventEmitter, { constructor } from 'events';
-import _, { get } from 'lodash';
-import { useEffect, useState } from 'react';
+import EventEmitter from 'events';
+import _ from 'lodash';
 import TypedEmitter from 'typed-emitter';
 import { CalendarArea as CalendarAreaModel, CalendarEvent } from '../types/CoveyTownSocket';
-import PlayerController from './PlayerController';
 
 /**
  * The events that the CalendarAreaController emits to subscribers. These events
  * are only ever emitted to local components (not to the townService).
  */
 export type CalendarAreaEvents = {
-  occupantsChange: (newOccupants: PlayerController[]) => void;
+  /**
+   * A calendarNameChange event indicates that the calendarName state has changed.
+   * Listeners are passed the new state in the parameter `calendarName`
+   */
+  calendarNameChange: (calendarName: string) => void;
+  /**
+   * An events event indicates that the events on the calendar state has changed.
+   * Listeners are passed the new state in the parameter `events`
+   */
+  eventsChange: (events: CalendarEvent[]) => void;
 };
 
+/**
+ * A CalendarAreaController manages the state for a CalendarArea in the frontend app, serving as a bridge between the calendar
+ * that is in the browser and the backend TownService, ensuring that all players viewing the same calendar
+ * are have the same events.
+ *
+ * The CalendarAreaController implements callbacks that handle events from the video player in this browser window, and
+ * emits updates when the state is updated, @see ViewingAreaEvents
+ */
 export default class ConversationAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
-  private _occupants: PlayerController[] = [];
-
   private _id: string;
 
-  private _events?: CalendarEvent[];
+  private _calendarAreaName?: string;
+
+  private _events: CalendarEvent[];
 
   /**
    * Create a new CalendarAreaController
    * @param id
    * @param events
    */
-  constructor(id: string, events?: CalendarEvent[]) {
+  constructor(calendarAreaModel: CalendarAreaModel) {
     super();
-    this._id = id;
-    this._events = events;
+    this._id = calendarAreaModel.id;
+    this._calendarAreaName = calendarAreaModel.calendarName;
+    this._events = calendarAreaModel.events;
   }
 
   /**
-   * The ID of this conversation area (read only)
+   * The ID of this calendar area (read only)
    */
   get id() {
     return this._id;
   }
 
-  /**
-   * The list of occupants in this conversation area. Changing the set of occupants
-   * will emit an occupantsChange event.
-   */
-  set occupants(newOccupants: PlayerController[]) {
-    if (
-      newOccupants.length !== this._occupants.length ||
-      _.xor(newOccupants, this._occupants).length > 0
-    ) {
-      this.emit('occupantsChange', newOccupants);
-      this._occupants = newOccupants;
+  get calendarName(): string | undefined {
+    return this._calendarAreaName;
+  }
+
+  set calendarName(calendarName: string | undefined) {
+    this._calendarAreaName = calendarName;
+  }
+
+  get events() {
+    return this._events;
+  }
+
+  set events(events: CalendarEvent[]) {
+    if (events.length !== this._events.length || _.xor(events, this._events).length > 0) {
+      this.emit('eventsChange', events);
+      this._events = events;
     }
   }
 
-  get occupants() {
-    return this._occupants;
-  }
-
   /**
-   * A calendar area is empty if there are no occupants in it
+   * Applies updates to this calendar area controller's model, setting the fields
+   * calendarName and events from the updatedModel
+   *
+   * @param updatedModel
    */
-  isEmpty(): boolean {
-    return this._occupants.length === 0;
+  public updateFrom(updatedModel: CalendarAreaModel): void {
+    this.calendarName = updatedModel.calendarName;
+    this.events = updatedModel.events;
   }
 }
