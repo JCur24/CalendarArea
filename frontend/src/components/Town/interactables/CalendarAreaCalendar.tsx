@@ -35,6 +35,7 @@ import CalendarAreaController from '../../../classes/CalendarAreaController';
 import { useCalendarAreaController, useInteractable } from '../../../classes/TownController';
 import CalendarAreaInteractable from './CalendarArea';
 import useTownController from '../../../hooks/useTownController';
+import SelectCalendarModal from './SelectCalendarModal';
 
 export function CalendarAreaCalendar({
   controller,
@@ -184,8 +185,11 @@ export function CalendarArea({
 
   if (!calendarName) {
     return (
-      // A modal
-      <></>
+      <SelectCalendarModal
+        isOpen={selectIsOpen}
+        close={() => setSelectIsOpen(false)}
+        calendarArea={calendarArea}
+      />
     );
   }
   return (
