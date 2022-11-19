@@ -697,6 +697,27 @@ export function useTownSettings() {
 }
 
 /**
+ * A react hook to retrieve a calendar area controller.
+ *
+ * This function will throw an error if the calendar area controller does not exist.
+ *
+ * This hook relies on the TownControllerContext.
+ *
+ * @param calendarAreaID The ID of the calendar area to retrieve the controller for
+ *
+ * @throws Error if there is no viewing area controller matching the specifeid ID
+ */
+export function useCalendarAreaController(calendarAreaID: string): CalendarAreaController {
+  const townController = useTownController();
+
+  const calendarArea = townController.calendarAreas.find(eachArea => eachArea.id == calendarAreaID);
+  if (!calendarArea) {
+    throw new Error(`Requested calendar area ${calendarAreaID} does not exist`);
+  }
+  return calendarArea;
+}
+
+/**
  * A react hook to retrieve a viewing area controller.
  *
  * This function will throw an error if the viewing area controller does not exist.

@@ -3,7 +3,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { nanoid } from 'nanoid';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faX } from '@fortawesome/free-solid-svg-icons';
 import { CalendarEvent } from '../../../../../shared/types/CoveyTownSocket';
@@ -31,11 +31,26 @@ import {
   Portal,
   useDisclosure,
 } from '@chakra-ui/react';
+import CalendarAreaController from '../../../classes/CalendarAreaController';
+import { useCalendarAreaController, useInteractable } from '../../../classes/TownController';
+import CalendarAreaInteractable from './CalendarArea';
+import useTownController from '../../../hooks/useTownController';
 
-export default function CalendarAreaCalendar(): JSX.Element {
+export function CalendarAreaCalendar({
+  controller,
+}: {
+  controller: CalendarAreaController;
+}): JSX.Element {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>(controller.events);
   const [newEvent, setNewEvent] = useState<CalendarEvent>();
+
+  useEffect(() => {
+    controller.addListener('eventsChange', setEvents);
+    return () => {
+      controller.removeListener('eventsChange', setEvents);
+    };
+  }, [controller]);
 
   function EventModal(): JSX.Element {
     const [title, setTitle] = useState('');
@@ -134,4 +149,59 @@ export default function CalendarAreaCalendar(): JSX.Element {
       <EventModal />
     </>
   );
+}
+
+/**
+ * The Calendar Area monitors the player's interaction with a ViewingArea on the map: displaying either
+ * a popup to set the video for a viewing area, or if the video is set, a video player.
+ *
+ * @param props: the viewing area interactable that is being interacted with
+ */
+export function CalendarArea({
+  calendarArea,
+}: {
+  calendarArea: CalendarAreaInteractable;
+}): JSX.Element {
+  const townController = useTownController();
+  const calendarAreaController = useCalendarAreaController(calendarArea.name);
+  const [selectIsOpen, setSelectIsOpen] = useState(
+    calendarAreaController.calendarName === undefined,
+  );
+  const [calendarName, setCalendarName] = useState(calendarAreaController.calendarName);
+  useEffect(() => {
+    const setName = (newName: string | undefined) => {
+      if (!newName) {
+        townController.interactableEmitter.emit('endIteraction', calendarAreaController);
+      } else {
+        setCalendarName(newName);
+      }
+    };
+    calendarAreaController.addListener('calendarNameChange', setName);
+    return () => {
+      calendarAreaController.removeListener('calendarNameChange', setName);
+    };
+  }, [calendarAreaController, townController]);
+
+  if (!calendarName) {
+    return (
+      // A modal
+      <></>
+    );
+  }
+  return (
+    <>
+      <CalendarAreaCalendar controller={calendarAreaController} />
+    </>
+  );
+}
+
+/**
+ * The CalendarAreaWrapper will only be rendered when the user begins interacting with the town
+ */
+export default function CalendarAreaWrapper(): JSX.Element {
+  const calendarArea = useInteractable<CalendarAreaInteractable>('calendarArea');
+  if (calendarArea) {
+    return <CalendarArea calendarArea={calendarArea} />;
+  }
+  return <></>;
 }

@@ -26,9 +26,9 @@ export type CalendarAreaEvents = {
  * are have the same events.
  *
  * The CalendarAreaController implements callbacks that handle events from the video player in this browser window, and
- * emits updates when the state is updated, @see ViewingAreaEvents
+ * emits updates when the state is updated, @see CalendarAreaEvents
  */
-export default class ConversationAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
+export default class CalendarAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
   private _id: string;
 
   private _calendarAreaName?: string;
