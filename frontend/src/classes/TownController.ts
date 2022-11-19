@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
+import CalendarArea from '../components/Town/interactables/CalendarArea';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
@@ -603,6 +604,29 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         reject(new Error('Invalid town ID'));
       });
     });
+  }
+
+  /**
+   * Retrieve the viewing area controller that corresponds to a viewingAreaModel, creating one if necessary
+   *
+   * @param viewingArea
+   * @returns
+   */
+  public getCalendarAreaController(calendarArea: CalendarArea): CalendarAreaController {
+    const existingController = this._calendarAreas.find(
+      eachExistingArea => eachExistingArea.id === calendarArea.name,
+    );
+    if (existingController) {
+      return existingController;
+    } else {
+      const newController = new CalendarAreaController({
+        id: calendarArea.name,
+        calendarName: '',
+        events: [],
+      });
+      this._calendarAreasInternal.push(newController);
+      return newController;
+    }
   }
 
   /**

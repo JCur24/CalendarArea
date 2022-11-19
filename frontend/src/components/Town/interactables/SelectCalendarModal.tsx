@@ -110,7 +110,7 @@ export default function SelectCalendarModal({
               e.preventDefault();
               createCalendarArea();
             }}>
-            Set video
+            Set calendar
           </Button>
           <Button onClick={closeModal}>Cancel</Button>
         </ModalFooter>
