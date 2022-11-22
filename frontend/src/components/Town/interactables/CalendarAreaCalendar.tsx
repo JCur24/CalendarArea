@@ -3,7 +3,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { nanoid } from 'nanoid';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faX } from '@fortawesome/free-solid-svg-icons';
 import { CalendarEvent } from '../../../../../shared/types/CoveyTownSocket';
@@ -43,13 +43,19 @@ export function CalendarAreaCalendar({
   controller: CalendarAreaController;
 }): JSX.Element {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const townController = useTownController();
   const [events, setEvents] = useState<CalendarEvent[]>(controller.events);
   const [newEvent, setNewEvent] = useState<CalendarEvent>();
 
   useEffect(() => {
-    controller.addListener('eventsChange', setEvents);
+    const setPlayBackEvents = (newEvents: CalendarEvent[]) => {
+      console.log(newEvents);
+      setEvents(newEvents);
+    };
+    controller.addListener('eventsChange', setPlayBackEvents);
     return () => {
-      controller.removeListener('eventsChange', setEvents);
+      controller.removeListener('eventsChange', setPlayBackEvents);
     };
   }, [controller]);
 
@@ -71,7 +77,11 @@ export function CalendarAreaCalendar({
             <Button
               onClick={() => {
                 if (newEvent) {
-                  setEvents([...events, { ...newEvent, title }]);
+                  const allEvents = [...events, { ...newEvent, title }];
+                  console.log('CalendarComponent Events', allEvents);
+                  setEvents(allEvents);
+                  controller.events = allEvents;
+                  townController.emitCalendarAreaUpdate(controller);
                 }
                 onClose();
               }}>
@@ -85,7 +95,7 @@ export function CalendarAreaCalendar({
 
   return (
     <>
-      <Container className='Full-Calendar'>
+      <Container className='participant-wrapper'>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
@@ -99,8 +109,8 @@ export function CalendarAreaCalendar({
           dayMaxEvents
           events={events}
           select={event => {
-            const parsedEvent = JSON.parse(JSON.stringify(event));
-            setNewEvent({ ...parsedEvent, id: nanoid() });
+            const { start, end } = JSON.parse(JSON.stringify(event));
+            setNewEvent({ start, end, title: '', id: nanoid() });
             onOpen();
           }}
           eventContent={currentEvent => {
@@ -108,9 +118,9 @@ export function CalendarAreaCalendar({
               return (
                 <Box>
                   <Box>
-                    <Popover closeOnBlur={false} placement='right'>
+                    <Popover closeOnBlur={false} placement='left'>
                       <PopoverTrigger>
-                        <FontAwesomeIcon icon={faX} />
+                        <FontAwesomeIcon icon={faX} onClick={() => setDeleteOpen(!deleteOpen)} />
                       </PopoverTrigger>
                       <Portal>
                         <PopoverContent>
@@ -164,7 +174,7 @@ export function CalendarArea({
   calendarArea: CalendarAreaInteractable;
 }): JSX.Element {
   const townController = useTownController();
-  const calendarAreaController = useCalendarAreaController(calendarArea.name);
+  const calendarAreaController = useCalendarAreaController(calendarArea.id);
   const [selectIsOpen, setSelectIsOpen] = useState(
     calendarAreaController.calendarName === undefined,
   );

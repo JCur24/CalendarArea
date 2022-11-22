@@ -50,6 +50,7 @@ export function ViewingAreaVideo({
         reactPlayerRef.current?.seekTo(newTime, 'seconds');
       }
     };
+    console.log(controller);
     controller.addListener('progressChange', progressListener);
     controller.addListener('playbackChange', setPlaying);
     return () => {
