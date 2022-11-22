@@ -30,7 +30,7 @@ export default function SelectCalendarModal({
   const coveyTownController = useTownController();
   const calendarAreaController = useCalendarAreaController(calendarArea.name);
 
-  const [calendarName, setCalendarName] = useState<string>('');
+  const [calendarName, setCalendarName] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -57,10 +57,10 @@ export default function SelectCalendarModal({
       try {
         await coveyTownController.createCalendarArea(request);
         toast({
-          title: 'Video set!',
+          title: 'Calendar Name set!',
           status: 'success',
         });
-        coveyTownController.unPause();
+        closeModal();
       } catch (err) {
         if (err instanceof Error) {
           toast({
@@ -77,14 +77,13 @@ export default function SelectCalendarModal({
         }
       }
     }
-  }, [calendarName, coveyTownController, calendarAreaController, toast]);
+  }, [calendarName, calendarAreaController, coveyTownController, toast, closeModal]);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={() => {
         closeModal();
-        coveyTownController.unPause();
       }}>
       <ModalOverlay />
       <ModalContent>
