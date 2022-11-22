@@ -13,10 +13,11 @@ export default class CalendarArea extends Interactable {
     this._labelText = this.scene.add.text(
       this.x - this.displayWidth / 2,
       this.y - this.displayHeight / 2,
-      `Press space to view the calendar`,
+      `Press space to view the ${this.getData('name')} calendar`,
       { color: '#FFFFFF', backgroundColor: '#000000' },
     );
     this._labelText.setVisible(false);
+    this.townController.getCalendarAreaController(this);
     this.setDepth(-1);
   }
 

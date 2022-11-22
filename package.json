@@ -9,7 +9,7 @@
         "run-townservice": "heroku local -p 3001 web",
         "lint": "cd townService && npm run-script lint && cd ../frontend && npm run-script lint && cd ../shared && npm run-script lint",
         "lintfix": "cd townService && npm run-script lint -- --fix && cd ../frontend && npm run-script lint -- --fix && cd ../shared && npm run-script lint -- --fix",
-		"zip": "npm-pack-zip"
+        "zip": "npm-pack-zip"
     },
     "repository": {
         "type": "git",
@@ -49,6 +49,9 @@
         "npm": "8.x.x"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "^6.2.1",
+        "@fortawesome/free-solid-svg-icons": "^6.2.1",
+        "@fortawesome/react-fontawesome": "^0.2.0",
         "@types/ramda": "^0.27.34",
         "ramda": "^0.27.1",
         "typescript-is": "^0.17.0"

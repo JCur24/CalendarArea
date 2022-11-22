@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
+import CalendarArea from '../components/Town/interactables/CalendarArea';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
@@ -449,7 +450,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         );
         updatedViewingArea?.updateFrom(interactable);
       } else if (isCalendarArea(interactable)) {
-        const updatedCalendarArea = this._calendarAreas.find(
+        const updatedCalendarArea = this._calendarAreasInternal.find(
           eachArea => eachArea.id === interactable.id,
         );
         if (updatedCalendarArea) {
@@ -591,7 +592,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           } else if (isViewingArea(eachInteractable)) {
             this._viewingAreas.push(new ViewingAreaController(eachInteractable));
           } else if (isCalendarArea(eachInteractable)) {
-            this._calendarAreas.push(new CalendarAreaController(eachInteractable));
+            this._calendarAreasInternal.push(new CalendarAreaController(eachInteractable));
           }
         });
         this._userID = initialData.userID;
@@ -603,6 +604,38 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         reject(new Error('Invalid town ID'));
       });
     });
+  }
+
+  /**
+   * Retrieve the viewing area controller that corresponds to a viewingAreaModel, creating one if necessary
+   *
+   * @param viewingArea
+   * @returns
+   */
+  public getCalendarAreaController(calendarArea: CalendarArea): CalendarAreaController {
+    const existingController = this._calendarAreasInternal.find(
+      eachExistingArea => eachExistingArea.id === calendarArea.name,
+    );
+    if (existingController) {
+      return existingController;
+    } else {
+      const newController = new CalendarAreaController({
+        id: calendarArea.name,
+        calendarName: '',
+        events: [],
+      });
+      this._calendarAreasInternal.push(newController);
+      return newController;
+    }
+  }
+
+  /**
+   * Emit a calendar area update to the townService
+   * @param calendarArea The Calendar Area Controller that is updated and should be emitted
+   *    with the event
+   */
+  public emitCalendarAreaUpdate(calendarArea: CalendarAreaController) {
+    this._socket.emit('interactableUpdate', calendarArea.toModel());
   }
 
   /**
@@ -694,6 +727,27 @@ export function useTownSettings() {
     };
   }, [townController]);
   return { friendlyName, isPubliclyListed };
+}
+
+/**
+ * A react hook to retrieve a calendar area controller.
+ *
+ * This function will throw an error if the calendar area controller does not exist.
+ *
+ * This hook relies on the TownControllerContext.
+ *
+ * @param calendarAreaID The ID of the calendar area to retrieve the controller for
+ *
+ * @throws Error if there is no viewing area controller matching the specifeid ID
+ */
+export function useCalendarAreaController(calendarAreaID: string): CalendarAreaController {
+  const townController = useTownController();
+
+  const calendarArea = townController.calendarAreas.find(eachArea => eachArea.id == calendarAreaID);
+  if (!calendarArea) {
+    throw new Error(`Requested calendar area ${calendarAreaID} does not exist`);
+  }
+  return calendarArea;
 }
 
 /**
