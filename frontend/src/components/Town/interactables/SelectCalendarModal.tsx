@@ -84,7 +84,8 @@ export default function SelectCalendarModal({
       isOpen={isOpen}
       onClose={() => {
         closeModal();
-      }}>
+      }}
+      isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Pick a video to watch in {calendarAreaController.id} </ModalHeader>
