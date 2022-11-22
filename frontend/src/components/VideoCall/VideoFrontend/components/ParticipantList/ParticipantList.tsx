@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { usePlayersInVideoCall } from '../../../../../classes/TownController';
 import ViewingAreaVideo from '../../../../Town/interactables/ViewingAreaVideo';
+import CalendarAreaVideo from '../../../../Town/interactables/CalendarAreaCalendar';
 import useMainParticipant from '../../hooks/useMainParticipant/useMainParticipant';
 import useParticipants, { ParticipantWithSlot } from '../../hooks/useParticipants/useParticipants';
 import useScreenShareParticipant from '../../hooks/useScreenShareParticipant/useScreenShareParticipant';
@@ -124,6 +125,7 @@ export default function ParticipantList() {
         // highlight={highlightedProfiles?.includes(localUserProfile.id) ?? false}
         slot={0}
       />
+      <CalendarAreaVideo />
       <ViewingAreaVideo />
 
       {participants

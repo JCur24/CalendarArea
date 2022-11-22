@@ -12,7 +12,7 @@ export type CalendarAreaEvents = {
    * A calendarNameChange event indicates that the calendarName state has changed.
    * Listeners are passed the new state in the parameter `calendarName`
    */
-  calendarNameChange: (calendarName: string) => void;
+  calendarNameChange: (calendarName: string | undefined) => void;
   /**
    * An events event indicates that the events on the calendar state has changed.
    * Listeners are passed the new state in the parameter `events`
@@ -26,9 +26,9 @@ export type CalendarAreaEvents = {
  * are have the same events.
  *
  * The CalendarAreaController implements callbacks that handle events from the video player in this browser window, and
- * emits updates when the state is updated, @see ViewingAreaEvents
+ * emits updates when the state is updated, @see CalendarAreaEvents
  */
-export default class ConversationAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
+export default class CalendarAreaController extends (EventEmitter as new () => TypedEmitter<CalendarAreaEvents>) {
   private _id: string;
 
   private _calendarAreaName?: string;
@@ -59,7 +59,10 @@ export default class ConversationAreaController extends (EventEmitter as new () 
   }
 
   set calendarName(calendarName: string | undefined) {
-    this._calendarAreaName = calendarName;
+    if (this._calendarAreaName !== calendarName) {
+      this._calendarAreaName = calendarName;
+      this.emit('calendarNameChange', calendarName);
+    }
   }
 
   get events() {
@@ -71,6 +74,19 @@ export default class ConversationAreaController extends (EventEmitter as new () 
       this.emit('eventsChange', events);
       this._events = events;
     }
+  }
+
+  /**
+   * Return the model object of the CalendarAreaController
+   *
+   * @param updatedModel
+   */
+  public toModel(): CalendarAreaModel {
+    return {
+      id: this._id,
+      calendarName: this._calendarAreaName,
+      events: this._events,
+    };
   }
 
   /**
