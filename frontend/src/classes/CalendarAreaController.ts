@@ -17,7 +17,7 @@ export type CalendarAreaEvents = {
    * An events event indicates that the events on the calendar state has changed.
    * Listeners are passed the new state in the parameter `events`
    */
-  eventsChange: (events: CalendarEvent[]) => void;
+  eventsChange: (newCalendarEvents: CalendarEvent[]) => void;
 };
 
 /**
@@ -37,8 +37,7 @@ export default class CalendarAreaController extends (EventEmitter as new () => T
 
   /**
    * Create a new CalendarAreaController
-   * @param id
-   * @param events
+   * @param calendarAreaModel
    */
   constructor(calendarAreaModel: CalendarAreaModel) {
     super();
@@ -69,17 +68,16 @@ export default class CalendarAreaController extends (EventEmitter as new () => T
     return this._events;
   }
 
-  set events(events: CalendarEvent[]) {
-    if (events.length !== this._events.length || _.xor(events, this._events).length > 0) {
-      this.emit('eventsChange', events);
-      this._events = events;
+  set events(newEvents: CalendarEvent[]) {
+    if (newEvents.length !== this._events.length || _.xor(newEvents, this._events).length > 0) {
+      this.emit('eventsChange', newEvents);
+      this._events = newEvents;
     }
   }
 
   /**
    * Return the model object of the CalendarAreaController
    *
-   * @param updatedModel
    */
   public toModel(): CalendarAreaModel {
     return {

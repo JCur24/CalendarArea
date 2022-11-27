@@ -3,15 +3,10 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { nanoid } from 'nanoid';
-import React, { useCallback, useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faX } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState } from 'react';
 import { CalendarEvent } from '../../../../../shared/types/CoveyTownSocket';
 import {
-  Box,
   Button,
-  ButtonGroup,
-  Center,
   Container,
   FormControl,
   FormLabel,
@@ -22,13 +17,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Popover,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverFooter,
-  PopoverHeader,
-  PopoverTrigger,
-  Portal,
   useDisclosure,
 } from '@chakra-ui/react';
 import CalendarAreaController from '../../../classes/CalendarAreaController';
@@ -43,21 +31,20 @@ export function CalendarAreaCalendar({
   controller: CalendarAreaController;
 }): JSX.Element {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isRemoveOpen, setIsRemoveOpen] = useState(false);
   const townController = useTownController();
   const [events, setEvents] = useState<CalendarEvent[]>(controller.events);
   const [newEvent, setNewEvent] = useState<CalendarEvent>();
 
   useEffect(() => {
-    const setPlayBackEvents = (newEvents: CalendarEvent[]) => {
-      console.log(newEvents);
-      setEvents(newEvents);
+    const eventsChange = (newCalendarEvents: CalendarEvent[]) => {
+      setEvents(newCalendarEvents);
     };
-    controller.addListener('eventsChange', setPlayBackEvents);
+    controller.on('eventsChange', eventsChange);
     return () => {
-      controller.removeListener('eventsChange', setPlayBackEvents);
+      controller.removeListener('eventsChange', eventsChange);
     };
-  }, [controller]);
+  }, [controller, controller.events]);
 
   function EventModal(): JSX.Element {
     const [title, setTitle] = useState('');
@@ -79,9 +66,9 @@ export function CalendarAreaCalendar({
                 if (newEvent) {
                   const allEvents = [...events, { ...newEvent, title }];
                   console.log('CalendarComponent Events', allEvents);
-                  setEvents(allEvents);
                   controller.events = allEvents;
                   townController.emitCalendarAreaUpdate(controller);
+                  setNewEvent(undefined);
                 }
                 onClose();
               }}>
@@ -93,9 +80,37 @@ export function CalendarAreaCalendar({
     );
   }
 
+  function DeleteModal(): JSX.Element {
+    return (
+      <Modal isCentered isOpen={isRemoveOpen} onClose={() => setIsRemoveOpen(!isRemoveOpen)}>
+        <ModalContent>
+          <ModalHeader>Are you sure you want to delete event: {newEvent?.title}</ModalHeader>
+          <ModalCloseButton />
+          <ModalFooter>
+            <Button
+              onClick={() => {
+                if (newEvent) {
+                  const filterEvents = events.filter(
+                    eventToDelete => eventToDelete.id !== newEvent.id,
+                  );
+                  console.log(filterEvents);
+                  controller.events = filterEvents;
+                  townController.emitCalendarAreaUpdate(controller);
+                  setNewEvent(undefined);
+                }
+                setIsRemoveOpen(false);
+              }}>
+              Delete Event
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    );
+  }
+
   return (
     <>
-      <Container className='participant-wrapper'>
+      <Container className='participant-wrapper' backgroundColor='white' minHeight={'50ch'}>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
@@ -109,55 +124,25 @@ export function CalendarAreaCalendar({
           dayMaxEvents
           events={events}
           select={event => {
+            console.log('select');
             const { start, end } = JSON.parse(JSON.stringify(event));
+            console.log('start', start, 'end', end);
             setNewEvent({ start, end, title: '', id: nanoid() });
             onOpen();
           }}
-          eventContent={currentEvent => {
-            if (currentEvent.view.type !== 'dayGridMonth') {
-              return (
-                <Box>
-                  <Box>
-                    <Popover closeOnBlur={false} placement='left'>
-                      <PopoverTrigger>
-                        <FontAwesomeIcon icon={faX} onClick={() => setDeleteOpen(!deleteOpen)} />
-                      </PopoverTrigger>
-                      <Portal>
-                        <PopoverContent>
-                          <PopoverHeader>
-                            <Center>Area you sure you want to delete this event?</Center>
-                          </PopoverHeader>
-                          <PopoverFooter alignItems='right' justifyContent='space-between' pb={4}>
-                            <ButtonGroup size='sm'>
-                              <Button
-                                onClick={() => {
-                                  setEvents(
-                                    events.filter(event => event.id !== currentEvent.event.id),
-                                  );
-                                }}>
-                                Delete
-                              </Button>
-                              <PopoverCloseButton />
-                            </ButtonGroup>
-                          </PopoverFooter>
-                        </PopoverContent>
-                      </Portal>
-                    </Popover>{' '}
-                    <b> {currentEvent.timeText}</b>
-                  </Box>
-                  {currentEvent.view.type === 'timeGridDay' && (
-                    <Center>
-                      <b>Event: </b>
-                      <i> {currentEvent.event.title}</i>
-                    </Center>
-                  )}
-                </Box>
-              );
-            }
+          eventClick={eventInfo => {
+            setNewEvent({
+              id: eventInfo.event.id,
+              title: eventInfo.event.title,
+              start: eventInfo.event.startStr,
+              end: eventInfo.event.endStr,
+            });
+            setIsRemoveOpen(true);
           }}
         />
       </Container>
       <EventModal />
+      <DeleteModal />
     </>
   );
 }
