@@ -41,15 +41,14 @@ export function CalendarAreaCalendar({
   const [newEvent, setNewEvent] = useState<CalendarEvent>();
 
   useEffect(() => {
-    const setPlayBackEvents = (newEvents: CalendarEvent[]) => {
-      console.log(newEvents);
-      setEvents(newEvents);
+    const eventsChange = (newCalendarEvents: CalendarEvent[]) => {
+      setEvents(newCalendarEvents);
     };
-    controller.addListener('eventsChange', setPlayBackEvents);
+    controller.on('eventsChange', eventsChange);
     return () => {
-      controller.removeListener('eventsChange', setPlayBackEvents);
+      controller.removeListener('eventsChange', eventsChange);
     };
-  }, [controller]);
+  }, [controller, controller.events]);
 
   function EventModal(): JSX.Element {
     const [title, setTitle] = useState('');
@@ -71,13 +70,41 @@ export function CalendarAreaCalendar({
                 if (newEvent) {
                   const allEvents = [...events, { ...newEvent, title }];
                   console.log('CalendarComponent Events', allEvents);
-                  setEvents(allEvents);
                   controller.events = allEvents;
                   townController.emitCalendarAreaUpdate(controller);
+                  setNewEvent(undefined);
                 }
                 onClose();
               }}>
               Create Event
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    );
+  }
+
+  function DeleteModal(): JSX.Element {
+    return (
+      <Modal isCentered isOpen={isRemoveOpen} onClose={() => setIsRemoveOpen(!isRemoveOpen)}>
+        <ModalContent>
+          <ModalHeader>Are you sure you want to delete event: {newEvent?.title}</ModalHeader>
+          <ModalCloseButton />
+          <ModalFooter>
+            <Button
+              onClick={() => {
+                if (newEvent) {
+                  const filterEvents = events.filter(
+                    eventToDelete => eventToDelete.id !== newEvent.id,
+                  );
+                  console.log(filterEvents);
+                  controller.events = filterEvents;
+                  townController.emitCalendarAreaUpdate(controller);
+                  setNewEvent(undefined);
+                }
+                setIsRemoveOpen(false);
+              }}>
+              Delete Event
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -101,69 +128,82 @@ export function CalendarAreaCalendar({
           dayMaxEvents
           events={events}
           select={event => {
+            console.log('select');
             const { start, end } = JSON.parse(JSON.stringify(event));
+            console.log('start', start, 'end', end);
             setNewEvent({ start, end, title: '', id: nanoid() });
             onOpen();
           }}
-          eventContent={currentEvent => {
-            if (currentEvent.view.type !== 'dayGridMonth') {
-              return (
-                <Box>
-                  <Box>
-                    <Modal
-                      isOpen={isRemoveOpen}
-                      onClose={() => {
-                        setIsRemoveOpen(false);
-                        console.log(currentEvent);
-                        console.log(events);
-                      }}
-                      isCentered>
-                      <ModalContent>
-                        <ModalHeader>
-                          Are you sure you want to delete {currentEvent.event.title} event?
-                        </ModalHeader>
-                        <ModalCloseButton />
+          // eventContent={currentEvent => {
+          //   if (currentEvent.view.type !== 'dayGridMonth') {
+          //     return (
+          //       <Box>
+          //         <Box>
+          //           <Modal
+          //             isOpen={isRemoveOpen}
+          //             onClose={() => {
+          //               console.log('event to delete', currentEvent);
+          //               console.log('eventID', currentEvent.event.id);
 
-                        <ModalFooter>
-                          <Button
-                            colorScheme='blue'
-                            mr={3}
-                            onClick={() => {
-                              const filterEvents = events.filter(
-                                eventToDelete =>
-                                  eventToDelete.start !== currentEvent.event.startStr &&
-                                  eventToDelete.end !== currentEvent.event.endStr &&
-                                  eventToDelete.title !== currentEvent.event.title,
-                              );
-                              setEvents(filterEvents);
-                              controller.events = filterEvents;
-                              townController.emitCalendarAreaUpdate(controller);
-                              setIsRemoveOpen(false);
-                            }}>
-                            Delete
-                          </Button>
-                          <Button onClick={() => setIsRemoveOpen(false)}>Cancel</Button>
-                        </ModalFooter>
-                      </ModalContent>
-                    </Modal>
-                    <span>
-                      <FontAwesomeIcon icon={faX} onClick={() => setIsRemoveOpen(!isRemoveOpen)} />{' '}
-                      <b> {currentEvent.timeText}</b>{' '}
-                    </span>
-                  </Box>
-                  {currentEvent.view.type === 'timeGridDay' && (
-                    <Center>
-                      <b>Event: </b>
-                      <i> {currentEvent.event.title}</i>
-                    </Center>
-                  )}
-                </Box>
-              );
-            }
+          //               console.log('events', events);
+          //               setIsRemoveOpen(false);
+          //             }}
+          //             isCentered>
+          //             <ModalContent>
+          //               <ModalHeader>
+          //                 Are you sure you want to delete {currentEvent.event.title} event?
+          //               </ModalHeader>
+          //               <ModalCloseButton />
+
+          //               <ModalFooter>
+          //                 <Button
+          //                   colorScheme='blue'
+          //                   mr={3}
+          //                   onClick={() => {
+          //                     console.log('events!', currentEvent);
+
+          //                     const filterEvents = events.filter(
+          //                       eventToDelete => eventToDelete.id !== currentEvent.event.id,
+          //                     );
+          //                     console.log(filterEvents);
+          //                     controller.events = filterEvents;
+          //                     townController.emitCalendarAreaUpdate(controller);
+          //                     setIsRemoveOpen(false);
+          //                   }}>
+          //                   Delete
+          //                 </Button>
+          //                 <Button onClick={() => setIsRemoveOpen(false)}>Cancel</Button>
+          //               </ModalFooter>
+          //             </ModalContent>
+          //           </Modal>
+          //           <span>
+          //             <FontAwesomeIcon icon={faX} onClick={() => setIsRemoveOpen(!isRemoveOpen)} />{' '}
+          //             <b> {currentEvent.timeText}</b>{' '}
+          //           </span>
+          //         </Box>
+          //         {currentEvent.view.type === 'timeGridDay' && (
+          //           <Center>
+          //             <b>Event: </b>
+          //             <i> {currentEvent.event.title}</i>
+          //           </Center>
+          //         )}
+          //       </Box>
+          //     );
+          //   }
+          // }}
+          eventClick={eventInfo => {
+            setNewEvent({
+              id: eventInfo.event.id,
+              title: eventInfo.event.title,
+              start: eventInfo.event.startStr,
+              end: eventInfo.event.endStr,
+            });
+            setIsRemoveOpen(true);
           }}
         />
       </Container>
       <EventModal />
+      <DeleteModal />
     </>
   );
 }
