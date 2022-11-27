@@ -39,6 +39,7 @@ export function CalendarAreaCalendar({
   useEffect(() => {
     const eventsChange = (newCalendarEvents: CalendarEvent[]) => {
       setEvents(newCalendarEvents);
+      console.log('settingEvents!');
     };
     controller.on('eventsChange', eventsChange);
     return () => {
@@ -65,7 +66,6 @@ export function CalendarAreaCalendar({
               onClick={() => {
                 if (newEvent) {
                   const allEvents = [...events, { ...newEvent, title }];
-                  console.log('CalendarComponent Events', allEvents);
                   controller.events = allEvents;
                   townController.emitCalendarAreaUpdate(controller);
                   setNewEvent(undefined);
@@ -93,7 +93,6 @@ export function CalendarAreaCalendar({
                   const filterEvents = events.filter(
                     eventToDelete => eventToDelete.id !== newEvent.id,
                   );
-                  console.log(filterEvents);
                   controller.events = filterEvents;
                   townController.emitCalendarAreaUpdate(controller);
                   setNewEvent(undefined);
@@ -124,9 +123,7 @@ export function CalendarAreaCalendar({
           dayMaxEvents
           events={events}
           select={event => {
-            console.log('select');
             const { start, end } = JSON.parse(JSON.stringify(event));
-            console.log('start', start, 'end', end);
             setNewEvent({ start, end, title: '', id: nanoid() });
             onOpen();
           }}
