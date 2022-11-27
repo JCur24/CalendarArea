@@ -33,7 +33,7 @@ export default class CalendarAreaController extends (EventEmitter as new () => T
 
   private _calendarAreaName?: string;
 
-  private _events: CalendarEvent[];
+  private _calendarEvents: CalendarEvent[];
 
   /**
    * Create a new CalendarAreaController
@@ -43,7 +43,7 @@ export default class CalendarAreaController extends (EventEmitter as new () => T
     super();
     this._id = calendarAreaModel.id;
     this._calendarAreaName = calendarAreaModel.calendarName;
-    this._events = calendarAreaModel.events;
+    this._calendarEvents = calendarAreaModel.events;
   }
 
   /**
@@ -59,19 +59,22 @@ export default class CalendarAreaController extends (EventEmitter as new () => T
 
   set calendarName(calendarName: string | undefined) {
     if (this._calendarAreaName !== calendarName) {
-      this._calendarAreaName = calendarName;
       this.emit('calendarNameChange', calendarName);
+      this._calendarAreaName = calendarName;
     }
   }
 
   get events() {
-    return this._events;
+    return this._calendarEvents;
   }
 
   set events(newEvents: CalendarEvent[]) {
-    if (newEvents.length !== this._events.length || _.xor(newEvents, this._events).length > 0) {
+    if (
+      newEvents.length !== this._calendarEvents.length ||
+      _.xor(newEvents, this._calendarEvents).length > 0
+    ) {
       this.emit('eventsChange', newEvents);
-      this._events = newEvents;
+      this._calendarEvents = newEvents;
     }
   }
 
@@ -83,7 +86,7 @@ export default class CalendarAreaController extends (EventEmitter as new () => T
     return {
       id: this._id,
       calendarName: this._calendarAreaName,
-      events: this._events,
+      events: this._calendarEvents,
     };
   }
 
