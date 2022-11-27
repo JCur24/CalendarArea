@@ -50,11 +50,15 @@ export function ViewingAreaVideo({
         reactPlayerRef.current?.seekTo(newTime, 'seconds');
       }
     };
-    console.log(controller);
+    const playingChange = (bool: boolean) => {
+      console.log('playback');
+      setPlaying(bool);
+    };
+    console.log('Adding Listeners', controller);
     controller.addListener('progressChange', progressListener);
-    controller.addListener('playbackChange', setPlaying);
+    controller.addListener('playbackChange', playingChange);
     return () => {
-      controller.removeListener('playbackChange', setPlaying);
+      controller.removeListener('playbackChange', playingChange);
       controller.removeListener('progressChange', progressListener);
     };
   }, [controller]);
@@ -132,6 +136,7 @@ export function ViewingArea({
       }
     };
     viewingAreaController.addListener('videoChange', setURL);
+    console.log('change');
     return () => {
       viewingAreaController.removeListener('videoChange', setURL);
     };

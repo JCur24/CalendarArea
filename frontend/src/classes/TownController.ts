@@ -76,6 +76,11 @@ export type TownEvents = {
    * An event that indicates that the set of calendar areas has changed. This event is emitted after updating
    * the town controller's record of calendar areas.
    */
+  calendarAreaChanged: (newCalendarArea: CalendarAreaController) => void;
+  /**
+   * An event that indicates that the set of calendar areas has changed. This event is emitted after updating
+   * the town controller's record of calendar areas.
+   */
   calendarAreasChanged: (newCalendarAreas: CalendarAreaController[]) => void;
   /**
    * An event that indicates that a new chat message has been received, which is the parameter passed to the listener
@@ -453,9 +458,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         const updatedCalendarArea = this._calendarAreasInternal.find(
           eachArea => eachArea.id === interactable.id,
         );
-        if (updatedCalendarArea) {
-          updatedCalendarArea?.updateFrom(interactable);
-        }
+        updatedCalendarArea?.updateFrom(interactable);
+        console.log('Update Calendar in Controller', updatedCalendarArea);
       }
     });
   }
@@ -745,7 +749,7 @@ export function useCalendarAreaController(calendarAreaID: string): CalendarAreaC
 
   const calendarArea = townController.calendarAreas.find(eachArea => eachArea.id == calendarAreaID);
   if (!calendarArea) {
-    throw new Error(`Requested calendar area ${calendarAreaID} does not exist`);
+    throw new Error(`Requested viewing area ${calendarAreaID} does not exist`);
   }
   return calendarArea;
 }
