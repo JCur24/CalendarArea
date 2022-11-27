@@ -4,13 +4,9 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faX } from '@fortawesome/free-solid-svg-icons';
 import { CalendarEvent } from '../../../../../shared/types/CoveyTownSocket';
 import {
-  Box,
   Button,
-  Center,
   Container,
   FormControl,
   FormLabel,
@@ -134,63 +130,6 @@ export function CalendarAreaCalendar({
             setNewEvent({ start, end, title: '', id: nanoid() });
             onOpen();
           }}
-          // eventContent={currentEvent => {
-          //   if (currentEvent.view.type !== 'dayGridMonth') {
-          //     return (
-          //       <Box>
-          //         <Box>
-          //           <Modal
-          //             isOpen={isRemoveOpen}
-          //             onClose={() => {
-          //               console.log('event to delete', currentEvent);
-          //               console.log('eventID', currentEvent.event.id);
-
-          //               console.log('events', events);
-          //               setIsRemoveOpen(false);
-          //             }}
-          //             isCentered>
-          //             <ModalContent>
-          //               <ModalHeader>
-          //                 Are you sure you want to delete {currentEvent.event.title} event?
-          //               </ModalHeader>
-          //               <ModalCloseButton />
-
-          //               <ModalFooter>
-          //                 <Button
-          //                   colorScheme='blue'
-          //                   mr={3}
-          //                   onClick={() => {
-          //                     console.log('events!', currentEvent);
-
-          //                     const filterEvents = events.filter(
-          //                       eventToDelete => eventToDelete.id !== currentEvent.event.id,
-          //                     );
-          //                     console.log(filterEvents);
-          //                     controller.events = filterEvents;
-          //                     townController.emitCalendarAreaUpdate(controller);
-          //                     setIsRemoveOpen(false);
-          //                   }}>
-          //                   Delete
-          //                 </Button>
-          //                 <Button onClick={() => setIsRemoveOpen(false)}>Cancel</Button>
-          //               </ModalFooter>
-          //             </ModalContent>
-          //           </Modal>
-          //           <span>
-          //             <FontAwesomeIcon icon={faX} onClick={() => setIsRemoveOpen(!isRemoveOpen)} />{' '}
-          //             <b> {currentEvent.timeText}</b>{' '}
-          //           </span>
-          //         </Box>
-          //         {currentEvent.view.type === 'timeGridDay' && (
-          //           <Center>
-          //             <b>Event: </b>
-          //             <i> {currentEvent.event.title}</i>
-          //           </Center>
-          //         )}
-          //       </Box>
-          //     );
-          //   }
-          // }}
           eventClick={eventInfo => {
             setNewEvent({
               id: eventInfo.event.id,
