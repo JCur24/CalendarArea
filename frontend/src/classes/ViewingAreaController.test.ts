@@ -85,6 +85,7 @@ describe('[T2] ViewingAreaController', () => {
       expect(mockListeners.progressChange).toBeCalledWith(newModel.elapsedTimeSec);
       expect(mockListeners.playbackChange).toBeCalledWith(newModel.isPlaying);
     });
+
     it('Does not update the id property', () => {
       const existingID = testArea.id;
       const newModel: ViewingArea = {
