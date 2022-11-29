@@ -17,7 +17,9 @@ import {
   PlayerLocation,
   TownEmitter,
   ViewingArea as ViewingAreaModel,
+  CalendarArea as CalendarAreaModel,
 } from '../types/CoveyTownSocket';
+import CalendarArea from './CalendarArea';
 import ConversationArea from './ConversationArea';
 import Town from './Town';
 
@@ -204,6 +206,49 @@ const testingMaps: TestMapDict = {
       },
     ],
   },
+  twoCalendars: {
+    tiledversion: '1.9.0',
+    tileheight: 32,
+    tilesets: [],
+    tilewidth: 32,
+    type: 'map',
+    layers: [
+      {
+        id: 4,
+        name: 'Objects',
+        objects: [
+          {
+            type: 'CalendarArea',
+            height: 2,
+            id: 52,
+            name: 'Name1',
+            rotation: 0,
+            visible: true,
+            width: 2,
+            x: 350,
+            y: 350,
+          },
+          {
+            type: 'CalendarArea',
+            height: 2,
+            id: 48,
+            name: 'Name2',
+            rotation: 0,
+            visible: true,
+            width: 2,
+            x: 400,
+            y: 400,
+          },
+        ],
+        opacity: 1,
+        type: 'objectgroup',
+        visible: true,
+        x: 0,
+        y: 0,
+      },
+    ],
+  },
+
   twoConvOneViewing: {
     tiledversion: '1.9.0',
     tileheight: 32,
@@ -342,6 +387,106 @@ const testingMaps: TestMapDict = {
       },
     ],
   },
+  twoConvTwoViewingTwoCalendar: {
+    tiledversion: '1.9.0',
+    tileheight: 32,
+    tilesets: [],
+    tilewidth: 32,
+    type: 'map',
+    layers: [
+      {
+        id: 4,
+        name: 'Objects',
+        objects: [
+          {
+            type: 'ConversationArea',
+            height: 237,
+            id: 39,
+            name: 'Name1',
+            rotation: 0,
+            visible: true,
+            width: 326,
+            x: 40,
+            y: 120,
+          },
+          {
+            type: 'ConversationArea',
+            height: 266,
+            id: 43,
+            name: 'Name2',
+            rotation: 0,
+            visible: true,
+            width: 467,
+            x: 612,
+            y: 120,
+          },
+          {
+            type: 'ViewingArea',
+            height: 237,
+            id: 54,
+            name: 'Name3',
+            properties: [
+              {
+                name: 'video',
+                type: 'string',
+                value: 'someURL',
+              },
+            ],
+            rotation: 0,
+            visible: true,
+            width: 326,
+            x: 155,
+            y: 566,
+          },
+          {
+            type: 'ViewingArea',
+            height: 237,
+            id: 55,
+            name: 'Name4',
+            properties: [
+              {
+                name: 'video',
+                type: 'string',
+                value: 'someURL',
+              },
+            ],
+            rotation: 0,
+            visible: true,
+            width: 326,
+            x: 600,
+            y: 1200,
+          },
+          {
+            type: 'CalendarArea',
+            height: 2,
+            id: 52,
+            name: 'Name5',
+            rotation: 0,
+            visible: true,
+            width: 2,
+            x: 3500,
+            y: 3500,
+          },
+          {
+            type: 'CalendarArea',
+            height: 2,
+            id: 48,
+            name: 'Name6',
+            rotation: 0,
+            visible: true,
+            width: 2,
+            x: 4000,
+            y: 4000,
+          },
+        ],
+        opacity: 1,
+        type: 'objectgroup',
+        visible: true,
+        x: 0,
+        y: 0,
+      },
+    ],
+  },
 };
 
 describe('Town', () => {
@@ -392,8 +537,22 @@ describe('Town', () => {
     describe('[T1] interactableUpdate callback', () => {
       let interactableUpdateHandler: (update: Interactable) => void;
       beforeEach(() => {
-        town.initializeFromMap(testingMaps.twoConvTwoViewing);
+        town.initializeFromMap(testingMaps.twoConvTwoViewingTwoCalendar);
         interactableUpdateHandler = getEventListener(playerTestData.socket, 'interactableUpdate');
+      });
+      it('Should not throw an error for any interactable area that is not a calendar area', () => {
+        expect(() =>
+          interactableUpdateHandler({ id: 'Name9', calendarName: 'Shaan + John', events: [] }),
+        ).not.toThrowError();
+      });
+      it('Should not throw an error if there is no such calendar area', () => {
+        expect(() =>
+          interactableUpdateHandler({
+            id: 'name9',
+            calendarName: nanoid(),
+            events: [],
+          }),
+        ).not.toThrowError();
       });
       it('Should not throw an error for any interactable area that is not a viewing area', () => {
         expect(() =>
@@ -408,6 +567,51 @@ describe('Town', () => {
             occupantsByID: [],
           }),
         ).not.toThrowError();
+      });
+      describe('When called passing a valid calendar area', () => {
+        let newArea: CalendarAreaModel;
+        let secondPlayer: MockedPlayer;
+        beforeEach(async () => {
+          newArea = {
+            id: 'Name5',
+            calendarName: 'calName',
+            events: [],
+          };
+          expect(town.addCalendarArea(newArea)).toBe(true);
+          secondPlayer = mockPlayer(town.townID);
+          mockTwilioVideo.getTokenForTown.mockClear();
+          await town.addPlayer(secondPlayer.userName, secondPlayer.socket);
+
+          newArea.calendarName = 'newCalName';
+          mockClear(townEmitter);
+
+          mockClear(secondPlayer.socket);
+          mockClear(secondPlayer.socketToRoomMock);
+          interactableUpdateHandler(newArea);
+        });
+        it("Should emit the interactable update to the other players in the town using the player's townEmitter, after the calendar area was successfully created", () => {
+          const updatedArea = town.getInteractable(newArea.id);
+          expect(updatedArea.toModel()).toEqual(newArea);
+        });
+        it('Should update the model for the calendar area', () => {
+          const lastUpdate = getLastEmittedEvent(
+            playerTestData.socketToRoomMock,
+            'interactableUpdate',
+          );
+          expect(lastUpdate).toEqual(newArea);
+        });
+        it('Should not emit interactableUpdate events to players directly, or to the whole town', () => {
+          expect(() =>
+            getLastEmittedEvent(playerTestData.socket, 'interactableUpdate'),
+          ).toThrowError();
+          expect(() => getLastEmittedEvent(townEmitter, 'interactableUpdate')).toThrowError();
+          expect(() =>
+            getLastEmittedEvent(secondPlayer.socket, 'interactableUpdate'),
+          ).toThrowError();
+          expect(() =>
+            getLastEmittedEvent(secondPlayer.socketToRoomMock, 'interactableUpdate'),
+          ).toThrowError();
+        });
       });
       describe('When called passing a valid viewing area', () => {
         let newArea: ViewingAreaModel;
@@ -506,7 +710,21 @@ describe('Town', () => {
         disconnectPlayer(playerTestData);
         expect(viewingArea.occupantsByID).toEqual([]);
       });
+      it('Removes the player from any active calendar area', () => {
+        // Load in a map with a calendar area
+        town.initializeFromMap(testingMaps.twoConvTwoViewingTwoCalendar);
+        playerTestData.moveTo(3501, 3501); // Inside of "Name5" area
+        expect(
+          town.addCalendarArea({ id: 'Name5', calendarName: 'testName', events: [] }),
+        ).toBeTruthy();
+        const calArea = town.getInteractable('Name5') as CalendarArea;
+        expect(calArea.occupantsByID).toEqual([player.id]);
+        disconnectPlayer(playerTestData);
+        expect(calArea.occupantsByID).toEqual([]);
+        expect(town.occupancy).toBe(0);
+      });
     });
+
     describe('playerMovement', () => {
       const newLocation: PlayerLocation = {
         x: 100,
@@ -533,7 +751,39 @@ describe('Town', () => {
         expect(player.location).toEqual(newLocation);
       });
     });
-    describe('interactableUpdate', () => {
+    describe('interactableUpdate for CalendarArea', () => {
+      let interactableUpdateCallback: (update: Interactable) => void;
+      let update: CalendarAreaModel;
+      beforeEach(async () => {
+        town.initializeFromMap(testingMaps.twoConvTwoViewingTwoCalendar);
+        playerTestData.moveTo(3501, 3501); // Inside of "Name5" viewing area
+        interactableUpdateCallback = getEventListener(playerTestData.socket, 'interactableUpdate');
+        update = {
+          id: 'Name5',
+          calendarName: 'newName',
+          events: [],
+        };
+        interactableUpdateCallback(update);
+      });
+      it('forwards updates to others in the town', () => {
+        const lastEvent = getLastEmittedEvent(
+          playerTestData.socketToRoomMock,
+          'interactableUpdate',
+        );
+        expect(lastEvent).toEqual(update);
+      });
+      it('does not forward updates to the ENTIRE town', () => {
+        expect(
+          // getLastEmittedEvent will throw an error if no event was emitted, which we expect to be the case here
+          () => getLastEmittedEvent(townEmitter, 'interactableUpdate'),
+        ).toThrowError();
+      });
+      it('updates the local model for that interactable', () => {
+        const interactable = town.getInteractable(update.id);
+        expect(interactable?.toModel()).toEqual(update);
+      });
+    });
+    describe('interactableUpdate for ViewingArea', () => {
       let interactableUpdateCallback: (update: Interactable) => void;
       let update: ViewingAreaModel;
       beforeEach(async () => {
@@ -684,6 +934,51 @@ describe('Town', () => {
       });
     });
   });
+  describe('[T1] addCalendarArea', () => {
+    beforeEach(async () => {
+      town.initializeFromMap(testingMaps.twoConvTwoViewingTwoCalendar);
+    });
+    it('Should return false if no area exists with that ID', () => {
+      expect(town.addCalendarArea({ id: nanoid(), calendarName: 'hello', events: [] })).toBe(false);
+    });
+    it('Should return false if the requested calendarName is empty', () => {
+      expect(town.addCalendarArea({ id: 'Name5', calendarName: '', events: [] })).toBe(false);
+      expect(town.addCalendarArea({ id: 'Name5', events: [] })).toBe(false);
+    });
+    it('Should return false if the area already has a calendarName. Here, we are setting a calendarName then attempting to update w/ a new name.', () => {
+      expect(town.addCalendarArea({ id: 'Name5', calendarName: 'new name', events: [] })).toEqual(
+        true,
+      );
+      expect(
+        town.addCalendarArea({ id: 'Name5', calendarName: 'new new name', events: [] }),
+      ).toEqual(false);
+    });
+    describe('When successful', () => {
+      const newName = 'new name';
+      beforeEach(() => {
+        playerTestData.moveTo(3501, 3501); // Inside of "Name5" area
+        expect(town.addCalendarArea({ id: 'Name5', calendarName: newName, events: [] })).toEqual(
+          true,
+        );
+      });
+      it('Should update the local model for that area', () => {
+        const calArea = town.getInteractable('Name5') as CalendarArea;
+        expect(calArea.calendarName).toEqual(newName);
+      });
+      it('Should include any players in that area as occupants', () => {
+        const calArea = town.getInteractable('Name5') as CalendarArea;
+        expect(calArea.occupantsByID).toEqual([player.id]);
+      });
+      it('Should emit an interactableUpdate message', () => {
+        const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+        expect(lastEmittedUpdate).toEqual({
+          id: 'Name5',
+          calendarName: newName,
+          events: [],
+        });
+      });
+    });
+  });
 
   describe('disconnectAllPlayers', () => {
     beforeEach(() => {
@@ -729,7 +1024,42 @@ describe('Town', () => {
       expect(viewingArea2.boundingBox).toEqual({ x: 612, y: 120, height: 266, width: 467 });
       expect(town.interactables.length).toBe(2);
     });
-    describe('Updating interactable state in playerMovements', () => {
+    it('Creates a CalendarArea instance for each region on the map', async () => {
+      town.initializeFromMap(testingMaps.twoCalendars);
+      const calendarArea1 = town.getInteractable('Name1');
+      const calendarArea2 = town.getInteractable('Name2');
+      expect(calendarArea1.id).toEqual('Name1');
+      expect(calendarArea1.boundingBox).toEqual({ x: 350, y: 350, height: 2, width: 2 });
+      expect(calendarArea2.id).toEqual('Name2');
+      expect(calendarArea2.boundingBox).toEqual({ x: 400, y: 400, height: 2, width: 2 });
+      expect(town.interactables.length).toBe(2);
+    });
+
+    describe('Updating interactable state in playerMovements for a CalendarArea', () => {
+      beforeEach(async () => {
+        town.initializeFromMap(testingMaps.twoConvTwoViewingTwoCalendar);
+        playerTestData.moveTo(3501, 3501);
+        expect(town.addCalendarArea({ id: 'Name5', calendarName: 'test', events: [] })).toBe(true);
+      });
+      it('Adds a player to a new interactable and sets their conversation label, if they move into it', async () => {
+        const newPlayer = mockPlayer(town.townID);
+        const newPlayerObj = await town.addPlayer(newPlayer.userName, newPlayer.socket);
+        newPlayer.moveTo(3501, 3501);
+
+        // Check that the player's location was updated
+        expect(newPlayerObj.location.interactableID).toEqual('Name5');
+
+        // Check that a movement event was emitted with the correct label
+        const lastEmittedMovement = getLastEmittedEvent(townEmitter, 'playerMoved');
+        expect(lastEmittedMovement.location.interactableID).toEqual('Name5');
+      });
+      it('Removes a player from their prior interactable and sets their conversation label, if they moved outside of it', () => {
+        expect(player.location.interactableID).toEqual('Name5');
+        playerTestData.moveTo(0, 0);
+        expect(player.location.interactableID).toBeUndefined();
+      });
+    });
+    describe('Updating interactable state in playerMovements for a ConversationArea', () => {
       beforeEach(async () => {
         town.initializeFromMap(testingMaps.twoConvOneViewing);
         playerTestData.moveTo(51, 121);
