@@ -33,7 +33,7 @@ import SelectCalendarModal from './SelectCalendarModal';
  * events change by adding events and deleting events when selected.
  *
  * The CalendarAreaVideo also subscribes to the the events in the controller. This will update
- * events in the controller when an event is created in the component.
+ * event in the controller when an event is created in the component.
  *
  * @param props: A single property 'controller', which is the CalendarAreaController corresponding to the
  *               current calendar area.
