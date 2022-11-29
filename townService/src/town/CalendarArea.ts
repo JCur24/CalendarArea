@@ -55,6 +55,16 @@ export default class CalendarArea extends InteractableArea {
   }
 
   /**
+   * Updates the state of this CalendarArea, setting the calendarName and events properties
+   *
+   * @param viewingArea updated model
+   */
+  public updateModel({ calendarName, events }: CalendarAreaModel) {
+    this._calendarName = calendarName;
+    this._events = events;
+  }
+
+  /**
    * Convert this CalendarArea instance to a simple CalendarAreaModel suitable for
    * transporting over a socket to a client.
    */
@@ -82,10 +92,5 @@ export default class CalendarArea extends InteractableArea {
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
     return new CalendarArea({ id: name, events: [] }, rect, broadcastEmitter);
-  }
-
-  public updateModel({ calendarName, events }: CalendarAreaModel) {
-    this._calendarName = calendarName;
-    this._events = events;
   }
 }
