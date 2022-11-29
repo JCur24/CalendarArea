@@ -50,7 +50,6 @@ class MockReactPlayer extends React.Component {
 }
 
 const reactPlayerSpy = jest.spyOn(ReactPlayer, 'default');
-// This TS ignore is necessary in order to spy on a react class based component, apparently...
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 reactPlayerSpy.prototype = React.Component.prototype;
