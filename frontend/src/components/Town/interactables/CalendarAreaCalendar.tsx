@@ -25,6 +25,19 @@ import CalendarAreaInteractable from './CalendarArea';
 import useTownController from '../../../hooks/useTownController';
 import SelectCalendarModal from './SelectCalendarModal';
 
+/**
+ * The CalendarAreaVideo component renders a CalendarArea's video, using the ReactPlayer component.
+ * The onSelect Property pops up a modal to create an event in the Calendar Area.
+ *
+ * The CalendarAreaVideo subscribes to the CalendarAreaControllers's events, and responds to
+ * events change by adding events and deleting events when selected.
+ *
+ * The CalendarAreaVideo also subscribes to the the events in the controller. This will update
+ * events in the controller when an event is created in the component.
+ *
+ * @param props: A single property 'controller', which is the CalendarAreaController corresponding to the
+ *               current calendar area.
+ */
 export function CalendarAreaCalendar({
   controller,
 }: {
