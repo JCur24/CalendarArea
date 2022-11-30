@@ -45,3 +45,20 @@ Create a `.env` file in the `frontend` directory, with the line: `REACT_APP_TOWN
 
 In the `frontend` directory, run `npm start` (again, you'll need to run `npm install` the very first time). After several moments (or minutes, depending on the speed of your machine), a browser will open with the frontend running locally.
 The frontend will automatically re-compile and reload in your browser if you change any files in the `frontend/src` directory.
+
+# Our New Feature
+
+Covey.Town is an instance of a cooperative workspace for virtual workers. Cooperation and group work need various basic elements to work: the ability to communicate, to look at the same files, and so on. Covey.Town had these features in some capacity, but what was missing was the ability to know when others would be on the platform in the first place. Most cooperative tools have some form of shared access calendar, to know when people would be available, when meetings would be, etc. As such we decided this would be a useful feature to implement to elevate Covey.Town’s utility.
+
+CalendarAreas are parts of the map that users can enter to access a shared calendar that is a part of that area. Any user can add and delete events, allowing groups to know when others will be online using Covey.Town, rather than using an external tool like Outlook or SMS.
+
+## Instructions to Access Our New Feature
+
+1. Enter a deployed version of our Covey.Town app. 
+2. Navigate to the conversationArea found in the beige room
+  a. Through the left door, and then straight up
+3. Enter the conversationArea, press space, and select a name for the area, creating the base calendar
+  a. Each area has one calendar as of our current implementation. A piece of future work we identified was being able to group multiple calendars to an area.
+4. You now have access to the base calendar:
+5. To create an all-day event, click a day from the “month” or “week” view. To create an event for a fragment of time within a day, go to the “day” view, navigate to the desired day using the arrows, and use a click-and-drag motion to create the event:
+6. To delete an event, select the event, and click delete.
